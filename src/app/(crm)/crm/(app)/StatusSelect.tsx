@@ -6,12 +6,9 @@ import { useState } from "react";
 import { LEAD_STATUS_OPTIONS } from "@/collections/Leads";
 
 /**
- * Inline status switcher on a board card. Updating a lead's status = moving it
- * to another column. We PATCH Payload's own REST endpoint (`/api/leads/:id`),
- * which is already authenticated by the admin session cookie — no extra API.
- *
- * A dropdown (not drag-and-drop) keeps v1 reliable and touch-friendly; drag can
- * come later.
+ * Inline status switcher on a deal card. Changing the status moves the deal to
+ * another pipeline column. Writes go through Payload's own REST endpoint
+ * (`/api/leads/:id`), authenticated by the session cookie.
  */
 export function StatusSelect({
   leadId,
@@ -37,7 +34,7 @@ export function StatusSelect({
       if (!res.ok) throw new Error("update_failed");
       router.refresh();
     } catch {
-      setValue(prev); // revert on failure
+      setValue(prev);
     } finally {
       setBusy(false);
     }
@@ -49,7 +46,7 @@ export function StatusSelect({
       value={value}
       disabled={busy}
       onChange={(e) => onChange(e.target.value)}
-      aria-label="Статус лида"
+      aria-label="Статус сделки"
     >
       {LEAD_STATUS_OPTIONS.map((o) => (
         <option key={o.value} value={o.value}>

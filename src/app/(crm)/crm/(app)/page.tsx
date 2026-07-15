@@ -1,19 +1,10 @@
-import { headers as nextHeaders } from "next/headers";
-import { redirect } from "next/navigation";
-
-import { LEAD_STATUS_OPTIONS } from "@/collections/Leads";
 import { CHANNEL_TYPE_OPTIONS } from "@/collections/Channels";
-import { getPayloadClient } from "@/lib/crm/payload";
+import { LEAD_STATUS_OPTIONS } from "@/collections/Leads";
+import { requireUser } from "@/lib/crm/auth";
 import { StatusSelect } from "./StatusSelect";
 
-/**
- * The unified inbox board (`/crm/inbox`).
- *
- * A Kanban view of every lead across every channel, in the pipeline columns
- * David asked for. Each card shows WHO and — prominently — WHERE FROM (the exact
- * connected account). Auth is Payload's admin session; unauthenticated users are
- * bounced to the admin login.
- */
+/** The pipeline board — the main CRM screen (`/crm`). Deals grouped into the
+ *  columns David asked for, each card showing WHO and WHERE FROM. */
 export const dynamic = "force-dynamic";
 
 type Ref<T> = T | string | number | null | undefined;
@@ -41,12 +32,8 @@ function isObj<T>(v: Ref<T>): v is T {
   return typeof v === "object" && v !== null;
 }
 
-export default async function InboxPage() {
-  const payload = await getPayloadClient();
-
-  // Auth gate via the Payload admin session cookie.
-  const { user } = await payload.auth({ headers: await nextHeaders() });
-  if (!user) redirect("/admin/login?redirect=/crm/inbox");
+export default async function BoardPage() {
+  const { payload } = await requireUser();
 
   const { docs } = await payload.find({
     collection: "leads",
@@ -56,7 +43,6 @@ export default async function InboxPage() {
   });
   const leads = docs as unknown as LeadDoc[];
 
-  // Group leads into their pipeline column.
   const byStatus = new Map<string, LeadDoc[]>();
   for (const o of LEAD_STATUS_OPTIONS) byStatus.set(o.value, []);
   for (const lead of leads) {
@@ -65,17 +51,20 @@ export default async function InboxPage() {
   }
 
   return (
-    <div className="crm-shell">
+    <>
       <header className="crm-topbar">
-        <h1>Avento CRM — Инбокс</h1>
-        <span className="crm-muted">{leads.length} лидов · {user.email}</span>
+        <h1>Сделки</h1>
+        <span className="crm-topbar-meta">{leads.length} в воронке</span>
       </header>
 
       {leads.length === 0 ? (
-        <p className="crm-empty">
-          Пока нет лидов. Как только придёт заявка с сайта или сообщение из
-          мессенджера — она появится здесь.
-        </p>
+        <div className="crm-empty">
+          <p>Пока нет сделок.</p>
+          <p className="crm-empty-sub">
+            Как только придёт заявка с сайта или сообщение из мессенджера — она
+            появится здесь, в колонке «Новый».
+          </p>
+        </div>
       ) : (
         <div className="crm-board">
           {LEAD_STATUS_OPTIONS.map((col) => {
@@ -90,7 +79,7 @@ export default async function InboxPage() {
                   {items.length === 0 ? (
                     <div className="crm-col-empty">—</div>
                   ) : (
-                    items.map((lead) => <LeadCard key={String(lead.id)} lead={lead} />)
+                    items.map((lead) => <DealCard key={String(lead.id)} lead={lead} />)
                   )}
                 </div>
               </section>
@@ -98,15 +87,14 @@ export default async function InboxPage() {
           })}
         </div>
       )}
-    </div>
+    </>
   );
 }
 
-function LeadCard({ lead }: { lead: LeadDoc }) {
+function DealCard({ lead }: { lead: LeadDoc }) {
   const contact = isObj(lead.contact) ? lead.contact : undefined;
   const channel = isObj(lead.channel) ? lead.channel : undefined;
 
-  // Source label: prefer the exact account name, else the channel type.
   const sourceName =
     channel?.label ||
     (lead.channelType ? CHANNEL_LABEL[lead.channelType] ?? lead.channelType : "—");

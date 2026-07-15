@@ -2,7 +2,7 @@
   "name": "Avento CRM",
   "short_name": "Avento CRM",
   "description": "Единый инбокс заявок Avento — со всех каналов в одном месте.",
-  "start_url": "/crm/inbox",
+  "start_url": "/crm",
   "scope": "/crm",
   "display": "standalone",
   "orientation": "portrait-primary",
