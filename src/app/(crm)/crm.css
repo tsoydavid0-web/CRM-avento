@@ -1,0 +1,147 @@
+/* CRM inbox surface — brand-aligned, self-contained (does not rely on the
+   marketing component classes). Colors mirror globals.css brand tokens. */
+
+.crm-shell {
+  min-height: 100vh;
+  background: #f4f6fb;
+  color: #0f172a;
+  font-family: var(--font-sans, system-ui, sans-serif);
+}
+
+.crm-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 20px;
+  background: #012c79;
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.crm-topbar h1 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 0.2px;
+}
+.crm-topbar .crm-muted {
+  color: #aec6f5;
+  font-size: 13px;
+}
+
+/* Horizontal Kanban board that scrolls on narrow screens (mobile-friendly). */
+.crm-board {
+  display: flex;
+  gap: 14px;
+  padding: 18px 20px 40px;
+  overflow-x: auto;
+  align-items: flex-start;
+}
+
+.crm-col {
+  flex: 0 0 300px;
+  max-width: 300px;
+  background: #eaeef7;
+  border: 1px solid #dbe2f1;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 120px);
+}
+.crm-col-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  font-weight: 700;
+  font-size: 14px;
+  border-bottom: 1px solid #dbe2f1;
+}
+.crm-col-head .crm-count {
+  background: #012c79;
+  color: #fff;
+  border-radius: 999px;
+  font-size: 12px;
+  padding: 1px 9px;
+}
+.crm-col-body {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+.crm-card {
+  background: #fff;
+  border: 1px solid #e6e9f2;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 1px 2px rgba(1, 44, 121, 0.05);
+}
+.crm-card .crm-name {
+  font-weight: 700;
+  font-size: 14px;
+  margin: 0 0 2px;
+}
+.crm-card .crm-line {
+  font-size: 13px;
+  color: #475569;
+  margin: 2px 0;
+  word-break: break-word;
+}
+
+/* Source badge — the "откуда пришёл лид" signal, made prominent. */
+.crm-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #fff1ea;
+  color: #b23c12;
+  border: 1px solid #ffd9c7;
+}
+.crm-source .crm-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f77844;
+}
+
+.crm-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  gap: 8px;
+}
+.crm-card-foot time {
+  font-size: 11px;
+  color: #94a3b8;
+}
+.crm-status-select {
+  font-size: 12px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #0f172a;
+}
+
+.crm-empty {
+  padding: 40px 20px;
+  color: #64748b;
+  font-size: 14px;
+}
+.crm-col-empty {
+  padding: 14px;
+  color: #94a3b8;
+  font-size: 12px;
+  text-align: center;
+}

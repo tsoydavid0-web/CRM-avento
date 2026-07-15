@@ -1,0 +1,25 @@
+{
+  "name": "Avento CRM",
+  "short_name": "Avento CRM",
+  "description": "Единый инбокс заявок Avento — со всех каналов в одном месте.",
+  "start_url": "/crm/inbox",
+  "scope": "/crm",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f4f6fb",
+  "theme_color": "#012c79",
+  "icons": [
+    {
+      "src": "/brand/avento-logo-final.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/brand/avento-logo-v2.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
