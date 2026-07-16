@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { CHANNEL_TYPE_OPTIONS } from "@/collections/Channels";
 import { requireUser } from "@/lib/crm/auth";
 import { StatusSelect } from "../../StatusSelect";
+import { AddTask } from "../../tasks/AddTask";
+import { TaskToggle } from "../../tasks/TaskToggle";
 import { EditLead } from "./EditLead";
 import { NoteForm } from "./NoteForm";
 
@@ -17,6 +19,10 @@ const CHANNEL_LABEL: Record<string, string> = Object.fromEntries(
 
 function obj<T>(v: unknown): T | undefined {
   return v && typeof v === "object" ? (v as T) : undefined;
+}
+// Impure clock read kept out of render body (react-hooks/purity).
+function nowMs(): number {
+  return Date.now();
 }
 function fmt(d?: string) {
   return d
@@ -42,11 +48,14 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
   }
   if (!lead) notFound();
 
-  const [messagesRes, activitiesRes, usersRes] = await Promise.all([
+  const [messagesRes, activitiesRes, usersRes, tasksRes] = await Promise.all([
     payload.find({ collection: "messages", where: { lead: { equals: id } }, sort: "createdAt", limit: 300, depth: 0 }),
     payload.find({ collection: "activities", where: { lead: { equals: id } }, sort: "-createdAt", limit: 300, depth: 1 }),
     payload.find({ collection: "users", limit: 200, depth: 0 }),
+    payload.find({ collection: "tasks", where: { lead: { equals: id } }, sort: "dueAt", limit: 100, depth: 1 }),
   ]);
+  const tasks = tasksRes.docs as Record<string, unknown>[];
+  const now = nowMs();
   const users = (usersRes.docs as { id: string | number; name?: string; email?: string }[]).map((u) => ({
     id: u.id,
     label: u.name || u.email || String(u.id),
@@ -110,6 +119,36 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
               budget={lead.budget as string}
             />
             {lead.notes ? <p className="crm-deal-notes">{lead.notes as string}</p> : null}
+          </section>
+
+          <section className="crm-panel">
+            <h2 className="crm-panel-title">Задачи</h2>
+            <AddTask leadId={id} contactId={contactId} compact />
+            {tasks.length === 0 ? (
+              <p className="crm-hint">Задач по этой сделке нет.</p>
+            ) : (
+              <ul className="crm-tasklist">
+                {tasks.map((t) => {
+                  const overdue = Boolean(t.dueAt && new Date(t.dueAt as string).getTime() < now && !t.done);
+                  return (
+                    <li key={String(t.id)} className={t.done ? "crm-task done" : overdue ? "crm-task overdue" : "crm-task"}>
+                      <TaskToggle taskId={t.id as string | number} done={Boolean(t.done)} />
+                      <div className="crm-task-main">
+                        <div className="crm-task-title">{t.title as string}</div>
+                        <div className="crm-task-meta">
+                          <span className={overdue ? "crm-due-badge overdue" : "crm-due-badge"}>
+                            {overdue ? "⏰ " : ""}
+                            {t.dueAt
+                              ? new Date(t.dueAt as string).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
+                              : "без срока"}
+                          </span>
+                        </div>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </section>
         </div>
 

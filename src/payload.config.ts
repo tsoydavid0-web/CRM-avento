@@ -15,6 +15,7 @@ import { Leads } from "./collections/Leads";
 import { Media } from "./collections/Media";
 import { Messages } from "./collections/Messages";
 import { Properties } from "./collections/Properties";
+import { Tasks } from "./collections/Tasks";
 import { Users } from "./collections/Users";
 import { SiteSettings } from "./globals/SiteSettings";
 
@@ -42,6 +43,7 @@ export default buildConfig({
     Contacts,
     Messages,
     Activities,
+    Tasks,
     Channels,
     // Catalog / site content (kept from the skeleton for now)
     Properties,

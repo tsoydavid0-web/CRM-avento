@@ -9,6 +9,7 @@ import { useState } from "react";
 const NAV = [
   { href: "/crm/dashboard", label: "Дашборд", icon: "📊", exact: false },
   { href: "/crm", label: "Сделки", icon: "🗂️", exact: true },
+  { href: "/crm/tasks", label: "Задачи", icon: "✅", exact: false },
   { href: "/crm/contacts", label: "Контакты", icon: "👤", exact: false },
   { href: "/crm/channels", label: "Каналы", icon: "📡", exact: false },
   { href: "/crm/team", label: "Команда", icon: "👥", exact: false, adminOnly: true },

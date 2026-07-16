@@ -814,6 +814,97 @@ body {
   }
 }
 
+/* ---------- Tasks ---------- */
+.crm-taskadd {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.crm-taskadd .crm-input {
+  min-width: 0;
+}
+.crm-taskadd > .crm-input:first-child {
+  flex: 1 1 200px;
+}
+.crm-due {
+  flex: 0 0 auto;
+}
+.crm-taskadd-compact {
+  margin-bottom: 12px;
+}
+.crm-taskadd-compact .crm-input {
+  font-size: 13px;
+  padding: 7px 9px;
+}
+
+.crm-tasklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.crm-task {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid var(--crm-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.crm-task.overdue {
+  border-color: #f6c6b8;
+  background: #fff7f4;
+}
+.crm-task.done {
+  opacity: 0.55;
+}
+.crm-task.done .crm-task-title {
+  text-decoration: line-through;
+}
+.crm-check {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--crm-terra);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.crm-task-main {
+  min-width: 0;
+}
+.crm-task-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--crm-ink);
+  word-break: break-word;
+}
+.crm-task-meta {
+  font-size: 12.5px;
+  color: var(--crm-muted);
+  margin-top: 3px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+}
+.crm-due-badge {
+  font-weight: 600;
+}
+.crm-due-badge.overdue {
+  color: #c0432b;
+}
+.crm-task-lead {
+  color: var(--crm-royal);
+  text-decoration: none;
+}
+.crm-task-lead:hover {
+  text-decoration: underline;
+}
+
 /* ---------- Login ---------- */
 .crm-login-shell {
   min-height: 100vh;
