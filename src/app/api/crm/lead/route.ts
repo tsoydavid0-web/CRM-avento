@@ -3,6 +3,10 @@ import type { NextRequest } from "next/server";
 
 import { ingestLead } from "@/lib/crm/ingest";
 import { getPayloadClient } from "@/lib/crm/payload";
+import { getClientIp, rateLimit } from "@/lib/security/rateLimit";
+
+const RATE_LIMIT = { limit: 60, windowMs: 60_000 };
+const MAX_BODY_BYTES = 16 * 1024;
 
 /**
  * POST /api/crm/lead — create a lead by hand from inside the CRM (e.g. a phone
@@ -16,9 +20,19 @@ export async function POST(request: NextRequest) {
   const { user } = await payload.auth({ headers: request.headers });
   if (!user) return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
 
+  // Per-user rate limit — blunts a compromised session spamming lead creation.
+  const limit = rateLimit(`crmlead:${user.id ?? getClientIp(request)}`, RATE_LIMIT);
+  if (!limit.success) {
+    return NextResponse.json({ ok: false, error: "rate_limited" }, { status: 429 });
+  }
+
   let body: Record<string, unknown>;
   try {
-    body = (await request.json()) as Record<string, unknown>;
+    const text = await request.text();
+    if (text.length > MAX_BODY_BYTES) {
+      return NextResponse.json({ ok: false, error: "payload_too_large" }, { status: 413 });
+    }
+    body = JSON.parse(text) as Record<string, unknown>;
   } catch {
     return NextResponse.json({ ok: false, error: "invalid_json" }, { status: 400 });
   }
@@ -55,7 +69,9 @@ export async function POST(request: NextRequest) {
         sourceDetail: body.channelId ? undefined : "Ручной ввод",
         notes: body.notes ? String(body.notes) : undefined,
       },
-      consent: true,
+      // No GDPR consent for manual entries — the lawful basis for a phone/walk-in
+      // lead is legitimate interest, not consent. Recording a false consent would
+      // itself be a data-accuracy problem. Only the public form stamps consent.
     });
     return NextResponse.json({ ok: true, leadId: res.leadId }, { status: 200 });
   } catch {

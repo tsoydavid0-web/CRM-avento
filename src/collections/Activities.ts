@@ -15,7 +15,7 @@ export const Activities: CollectionConfig = {
     read: ({ req: { user } }) => Boolean(user),
     create: ({ req: { user } }) => Boolean(user),
     update: ({ req: { user } }) => Boolean(user),
-    delete: ({ req: { user } }) => Boolean(user),
+    delete: ({ req: { user } }) => (user as { role?: string } | null)?.role === "admin",
   },
   admin: {
     useAsTitle: "type",
@@ -82,4 +82,16 @@ export const Activities: CollectionConfig = {
       label: { en: "Meta", ru: "Мета" },
     },
   ],
+  hooks: {
+    beforeChange: [
+      ({ data, req, operation }) => {
+        // Stamp the author from the session, not the client — so the audit trail
+        // can't be spoofed. Only on create, and only if not already set.
+        if (operation === "create" && req?.user && !data.actor) {
+          data.actor = req.user.id;
+        }
+        return data;
+      },
+    ],
+  },
 };

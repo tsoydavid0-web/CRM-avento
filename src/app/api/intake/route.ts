@@ -1,3 +1,5 @@
+import { createHash, timingSafeEqual } from "crypto";
+
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
@@ -83,7 +85,13 @@ function json(body: unknown, status: number, headers?: HeadersInit) {
   });
 }
 
-/** Constant-time-ish key check; fail closed in production. */
+/** Constant-time key check that doesn't leak the key length (compares SHA-256
+ *  digests, always equal length). Fails closed in production when unset. */
+function safeEqual(a: string, b: string): boolean {
+  const da = createHash("sha256").update(a).digest();
+  const db = createHash("sha256").update(b).digest();
+  return timingSafeEqual(da, db);
+}
 function isAuthorized(request: NextRequest): boolean {
   const expected = process.env.INTAKE_API_KEY;
   if (!expected) {
@@ -91,7 +99,7 @@ function isAuthorized(request: NextRequest): boolean {
     return process.env.NODE_ENV !== "production";
   }
   const provided = request.headers.get("x-intake-key") ?? "";
-  return provided.length === expected.length && provided === expected;
+  return safeEqual(provided, expected);
 }
 
 export async function POST(request: NextRequest) {

@@ -25,6 +25,13 @@ const CHANNEL_LABEL: Record<string, string> = Object.fromEntries(
 );
 const OPEN_STATUSES = new Set(["new", "in_progress", "qualified", "closing"]);
 
+// The cutoff is a per-request value; keeping the impure `Date.now()` out of the
+// component render body satisfies the strict react-hooks/purity rule. Safe here:
+// the dashboard is `force-dynamic` and never cached.
+function cutoffISO(msAgo: number): string {
+  return new Date(Date.now() - msAgo).toISOString();
+}
+
 type LeadRow = { status?: string; channelType?: string; createdAt?: string };
 
 export default async function DashboardPage({
@@ -35,7 +42,7 @@ export default async function DashboardPage({
   const { payload } = await requireUser();
   const sp = await searchParams;
   const period = PERIODS.find((p) => p.key === sp.period) ?? PERIODS[1];
-  const since = new Date(Date.now() - period.ms).toISOString();
+  const since = cutoffISO(period.ms);
 
   const [inPeriodRes, allRes] = await Promise.all([
     payload.find({

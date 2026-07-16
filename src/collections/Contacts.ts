@@ -20,7 +20,7 @@ export const Contacts: CollectionConfig = {
     read: ({ req: { user } }) => Boolean(user),
     create: ({ req: { user } }) => Boolean(user),
     update: ({ req: { user } }) => Boolean(user),
-    delete: ({ req: { user } }) => Boolean(user),
+    delete: ({ req: { user } }) => (user as { role?: string } | null)?.role === "admin",
   },
   admin: {
     useAsTitle: "fullName",

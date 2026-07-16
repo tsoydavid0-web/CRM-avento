@@ -20,6 +20,16 @@ import { SiteSettings } from "./globals/SiteSettings";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
+// Fail closed: in production these MUST be set. Falling back to "" would sign
+// auth tokens with an empty secret (forgeable admin sessions) or connect to no
+// database — a missing-config bug that must crash the boot, not run silently.
+const PAYLOAD_SECRET = process.env.PAYLOAD_SECRET;
+const DATABASE_URL = process.env.DATABASE_URL;
+if (process.env.NODE_ENV === "production") {
+  if (!PAYLOAD_SECRET) throw new Error("PAYLOAD_SECRET is required in production");
+  if (!DATABASE_URL) throw new Error("DATABASE_URL is required in production");
+}
+
 export default buildConfig({
   admin: {
     user: Users.slug,
@@ -49,10 +59,10 @@ export default buildConfig({
     ],
     defaultLocale: "ru",
   },
-  secret: process.env.PAYLOAD_SECRET || "",
+  secret: PAYLOAD_SECRET || "",
   typescript: { outputFile: path.resolve(dirname, "payload-types.ts") },
   db: postgresAdapter({
-    pool: { connectionString: process.env.DATABASE_URL || "" },
+    pool: { connectionString: DATABASE_URL || "" },
   }),
   sharp,
   plugins: [

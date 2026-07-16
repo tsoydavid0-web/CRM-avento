@@ -3,6 +3,10 @@ import type { NextRequest } from "next/server";
 
 import { ingestLead } from "@/lib/crm/ingest";
 import { getPayloadClient } from "@/lib/crm/payload";
+import { getClientIp, rateLimit } from "@/lib/security/rateLimit";
+
+const RATE_LIMIT = { limit: 120, windowMs: 60_000 };
+const MAX_BODY_BYTES = 64 * 1024;
 
 /**
  * POST /api/webhooks/telegram — inbound Telegram messages → unified inbox.
@@ -26,8 +30,19 @@ function ack() {
 }
 
 export async function POST(request: NextRequest) {
+  // Rate limit before any work.
+  if (!rateLimit(`tg:${getClientIp(request)}`, RATE_LIMIT).success) {
+    return NextResponse.json({ ok: false }, { status: 429 });
+  }
+
+  // Secret verification. Fail CLOSED in production: an unconfigured secret must
+  // not accept unauthenticated (spoofable) updates.
   const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
-  if (secret) {
+  if (!secret) {
+    if (process.env.NODE_ENV === "production") {
+      return NextResponse.json({ ok: false, error: "not_configured" }, { status: 503 });
+    }
+  } else {
     const got = request.headers.get("x-telegram-bot-api-secret-token");
     if (got !== secret) {
       return NextResponse.json({ ok: false }, { status: 401 });
@@ -36,7 +51,11 @@ export async function POST(request: NextRequest) {
 
   let update: TelegramUpdate;
   try {
-    update = (await request.json()) as TelegramUpdate;
+    const text = await request.text();
+    if (text.length > MAX_BODY_BYTES) {
+      return NextResponse.json({ ok: false, error: "too_large" }, { status: 413 });
+    }
+    update = JSON.parse(text) as TelegramUpdate;
   } catch {
     return ack();
   }
