@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { CHANNEL_TYPE_OPTIONS } from "@/collections/Channels";
 import { requireUser } from "@/lib/crm/auth";
 import { StatusSelect } from "../../StatusSelect";
+import { EditLead } from "./EditLead";
 import { NoteForm } from "./NoteForm";
 
 /** Deal detail — the full working card for one lead: contact, source,
@@ -13,15 +14,6 @@ export const dynamic = "force-dynamic";
 const CHANNEL_LABEL: Record<string, string> = Object.fromEntries(
   CHANNEL_TYPE_OPTIONS.map((o) => [o.value, o.label.ru]),
 );
-
-const INTENT_LABEL: Record<string, string> = {
-  buy: "Покупка",
-  sell: "Продажа",
-  rent: "Аренда",
-  invest: "Инвестиции",
-  relocation: "Релокация / ВНЖ",
-  other: "Другое",
-};
 
 function obj<T>(v: unknown): T | undefined {
   return v && typeof v === "object" ? (v as T) : undefined;
@@ -50,10 +42,15 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
   }
   if (!lead) notFound();
 
-  const [messagesRes, activitiesRes] = await Promise.all([
+  const [messagesRes, activitiesRes, usersRes] = await Promise.all([
     payload.find({ collection: "messages", where: { lead: { equals: id } }, sort: "createdAt", limit: 300, depth: 0 }),
     payload.find({ collection: "activities", where: { lead: { equals: id } }, sort: "-createdAt", limit: 300, depth: 1 }),
+    payload.find({ collection: "users", limit: 200, depth: 0 }),
   ]);
+  const users = (usersRes.docs as { id: string | number; name?: string; email?: string }[]).map((u) => ({
+    id: u.id,
+    label: u.name || u.email || String(u.id),
+  }));
 
   const contact = obj<Record<string, unknown>>(lead.contact);
   const channel = obj<Record<string, unknown>>(lead.channel);
@@ -105,10 +102,13 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
 
           <section className="crm-panel">
             <h2 className="crm-panel-title">Квалификация</h2>
-            <dl className="crm-kv">
-              <div><dt>Запрос</dt><dd>{lead.intent ? INTENT_LABEL[lead.intent as string] ?? (lead.intent as string) : "—"}</dd></div>
-              <div><dt>Бюджет</dt><dd>{(lead.budget as string) || "—"}</dd></div>
-            </dl>
+            <EditLead
+              leadId={id}
+              users={users}
+              owner={(obj<Record<string, unknown>>(lead.owner)?.id as string | number) ?? (lead.owner as string | number)}
+              intent={lead.intent as string}
+              budget={lead.budget as string}
+            />
             {lead.notes ? <p className="crm-deal-notes">{lead.notes as string}</p> : null}
           </section>
         </div>

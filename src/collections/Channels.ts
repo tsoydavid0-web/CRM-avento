@@ -16,6 +16,7 @@ export const CHANNEL_TYPE_VALUES = [
   "linkedin",
   "meta",
   "email",
+  "manual",
 ] as const;
 
 export type ChannelType = (typeof CHANNEL_TYPE_VALUES)[number];
@@ -30,6 +31,7 @@ export const CHANNEL_TYPE_OPTIONS: { label: { en: string; ru: string }; value: C
   { label: { en: "LinkedIn", ru: "LinkedIn" }, value: "linkedin" },
   { label: { en: "Meta Lead Ads", ru: "Meta Lead Ads" }, value: "meta" },
   { label: { en: "Email", ru: "Email" }, value: "email" },
+  { label: { en: "Manual / call", ru: "Вручную / звонок" }, value: "manual" },
 ];
 
 /**

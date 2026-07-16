@@ -1,8 +1,10 @@
 import Link from "next/link";
+import type { Where } from "payload";
 
 import { CHANNEL_TYPE_OPTIONS } from "@/collections/Channels";
 import { LEAD_STATUS_OPTIONS } from "@/collections/Leads";
 import { requireUser } from "@/lib/crm/auth";
+import { FilterBar } from "./FilterBar";
 import { StatusSelect } from "./StatusSelect";
 
 /** The pipeline board — the main CRM screen (`/crm`). Deals grouped into the
@@ -34,16 +36,41 @@ function isObj<T>(v: Ref<T>): v is T {
   return typeof v === "object" && v !== null;
 }
 
-export default async function BoardPage() {
+export default async function BoardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; channel?: string; owner?: string }>;
+}) {
   const { payload } = await requireUser();
+  const sp = await searchParams;
+  const q = (sp.q ?? "").trim();
+  const channel = sp.channel ?? "";
+  const owner = sp.owner ?? "";
 
-  const { docs } = await payload.find({
-    collection: "leads",
-    limit: 300,
-    sort: "-createdAt",
-    depth: 1,
-  });
-  const leads = docs as unknown as LeadDoc[];
+  // Build the filter query from the URL.
+  const and: Where[] = [];
+  if (channel) and.push({ channelType: { equals: channel } });
+  if (owner) and.push({ owner: { equals: Number(owner) } });
+  if (q) {
+    and.push({
+      or: [
+        { "contact.fullName": { like: q } },
+        { "contact.phone": { like: q } },
+        { title: { like: q } },
+      ],
+    });
+  }
+  const where: Where | undefined = and.length ? { and } : undefined;
+
+  const [leadsRes, usersRes] = await Promise.all([
+    payload.find({ collection: "leads", where, limit: 300, sort: "-createdAt", depth: 1 }),
+    payload.find({ collection: "users", limit: 200, depth: 0 }),
+  ]);
+  const leads = leadsRes.docs as unknown as LeadDoc[];
+  const users = (usersRes.docs as { id: string | number; name?: string; email?: string }[]).map((u) => ({
+    id: u.id,
+    label: u.name || u.email || String(u.id),
+  }));
 
   const byStatus = new Map<string, LeadDoc[]>();
   for (const o of LEAD_STATUS_OPTIONS) byStatus.set(o.value, []);
@@ -52,19 +79,29 @@ export default async function BoardPage() {
     bucket.push(lead);
   }
 
+  const filtered = Boolean(q || channel || owner);
+
   return (
     <>
       <header className="crm-topbar">
         <h1>Сделки</h1>
-        <span className="crm-topbar-meta">{leads.length} в воронке</span>
+        <div className="crm-topbar-actions">
+          <span className="crm-topbar-meta">{leads.length} в воронке</span>
+          <Link href="/crm/new" className="crm-btn crm-btn-primary crm-btn-sm">+ Новый лид</Link>
+        </div>
       </header>
+
+      <div className="crm-filterwrap">
+        <FilterBar users={users} q={q} channel={channel} owner={owner} />
+      </div>
 
       {leads.length === 0 ? (
         <div className="crm-empty">
-          <p>Пока нет сделок.</p>
+          <p>{filtered ? "Ничего не найдено." : "Пока нет сделок."}</p>
           <p className="crm-empty-sub">
-            Как только придёт заявка с сайта или сообщение из мессенджера — она
-            появится здесь, в колонке «Новый».
+            {filtered
+              ? "Попробуй изменить поиск или сбросить фильтры."
+              : "Как только придёт заявка с сайта или сообщение из мессенджера — она появится здесь, в колонке «Новый». Или заведи лид вручную кнопкой «+ Новый лид»."}
           </p>
         </div>
       ) : (

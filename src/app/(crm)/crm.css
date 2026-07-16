@@ -699,6 +699,121 @@ body {
   }
 }
 
+/* ---------- Forms (new lead / edit) ---------- */
+.crm-narrow {
+  max-width: 640px;
+}
+.crm-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--crm-surface, #fff);
+  background: #fff;
+  border: 1px solid var(--crm-border);
+  border-radius: 14px;
+  padding: 20px;
+}
+.crm-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.crm-form .crm-field span,
+.crm-edit .crm-field span {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 5px;
+}
+.crm-form .crm-field input,
+.crm-form .crm-field select,
+.crm-form .crm-field textarea,
+.crm-edit .crm-field input,
+.crm-edit .crm-field select {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #fff;
+  color: var(--crm-ink);
+}
+.crm-form .crm-field textarea {
+  resize: vertical;
+}
+.crm-form .crm-field input:focus,
+.crm-form .crm-field select:focus,
+.crm-form .crm-field textarea:focus,
+.crm-edit .crm-field input:focus,
+.crm-edit .crm-field select:focus {
+  outline: 2px solid var(--crm-royal);
+  outline-offset: 1px;
+}
+.crm-form-actions {
+  margin-top: 4px;
+}
+
+/* Edit block inside deal card */
+.crm-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.crm-edit-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Topbar action button + filter bar */
+.crm-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.crm-btn-sm {
+  padding: 7px 14px;
+  font-size: 13px;
+  border-radius: 9px;
+  text-decoration: none;
+}
+.crm-btn-ghost {
+  background: transparent;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+}
+.crm-btn-ghost:hover {
+  background: #eef2fa;
+}
+.crm-filterwrap {
+  padding: 0 24px 8px;
+}
+.crm-filterbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.crm-search {
+  min-width: 220px;
+  flex: 1 1 220px;
+  max-width: 340px;
+}
+
+@media (max-width: 720px) {
+  .crm-form-row {
+    grid-template-columns: 1fr;
+  }
+  .crm-filterwrap {
+    padding: 0 14px 8px;
+  }
+  .crm-search {
+    max-width: none;
+  }
+}
+
 /* ---------- Login ---------- */
 .crm-login-shell {
   min-height: 100vh;
