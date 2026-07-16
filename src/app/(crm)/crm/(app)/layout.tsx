@@ -10,10 +10,11 @@ import { Sidebar } from "./Sidebar";
  */
 export default async function CrmAppLayout({ children }: { children: ReactNode }) {
   const { user } = await requireUser();
+  const isAdmin = (user as { role?: string }).role === "admin";
 
   return (
     <div className="crm-app">
-      <Sidebar email={user.email} />
+      <Sidebar email={user.email} isAdmin={isAdmin} />
       <div className="crm-content">{children}</div>
     </div>
   );

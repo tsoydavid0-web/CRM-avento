@@ -11,9 +11,10 @@ const NAV = [
   { href: "/crm", label: "Сделки", icon: "🗂️", exact: true },
   { href: "/crm/contacts", label: "Контакты", icon: "👤", exact: false },
   { href: "/crm/channels", label: "Каналы", icon: "📡", exact: false },
+  { href: "/crm/team", label: "Команда", icon: "👥", exact: false, adminOnly: true },
 ];
 
-export function Sidebar({ email }: { email?: string | null }) {
+export function Sidebar({ email, isAdmin }: { email?: string | null; isAdmin?: boolean }) {
   const pathname = usePathname();
   const [busy, setBusy] = useState(false);
 
@@ -31,7 +32,7 @@ export function Sidebar({ email }: { email?: string | null }) {
     <aside className="crm-sidebar">
       <div className="crm-logo">Avento CRM</div>
       <nav className="crm-nav">
-        {NAV.map((item) => {
+        {NAV.filter((item) => !item.adminOnly || isAdmin).map((item) => {
           const active = item.exact
             ? pathname === item.href
             : pathname.startsWith(item.href);

@@ -8,9 +8,17 @@ import type { CollectionConfig } from "payload";
 export const Users: CollectionConfig = {
   slug: "users",
   auth: true,
+  access: {
+    // Any signed-in team member can see the team; only admins manage accounts.
+    // (Creating the very first user is special-cased by Payload and still works.)
+    read: ({ req: { user } }) => Boolean(user),
+    create: ({ req: { user } }) => (user as { role?: string } | null)?.role === "admin",
+    update: ({ req: { user } }) => (user as { role?: string } | null)?.role === "admin",
+    delete: ({ req: { user } }) => (user as { role?: string } | null)?.role === "admin",
+  },
   admin: {
     useAsTitle: "email",
-    defaultColumns: ["name", "email"],
+    defaultColumns: ["name", "email", "role"],
   },
   fields: [
     {

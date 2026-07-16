@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { CHANNEL_TYPE_OPTIONS } from "@/collections/Channels";
 import { LEAD_STATUS_OPTIONS } from "@/collections/Leads";
 import { requireUser } from "@/lib/crm/auth";
@@ -111,17 +113,19 @@ function DealCard({ lead }: { lead: LeadDoc }) {
 
   return (
     <article className="crm-card">
-      <p className="crm-name">{name}</p>
-      {contact?.phone && <p className="crm-line">📞 {contact.phone}</p>}
-      {contact?.email && <p className="crm-line">✉️ {contact.email}</p>}
-      {lead.intent && <p className="crm-line">Запрос: {lead.intent}</p>}
-      {lead.budget && <p className="crm-line">Бюджет: {lead.budget}</p>}
+      <Link href={`/crm/deal/${lead.id}`} className="crm-card-link">
+        <p className="crm-name">{name}</p>
+        {contact?.phone && <p className="crm-line">📞 {contact.phone}</p>}
+        {contact?.email && <p className="crm-line">✉️ {contact.email}</p>}
+        {lead.intent && <p className="crm-line">Запрос: {lead.intent}</p>}
+        {lead.budget && <p className="crm-line">Бюджет: {lead.budget}</p>}
 
-      <span className="crm-source" title="Источник лида">
-        <span className="crm-dot" />
-        {sourceName}
-        {lead.sourceDetail ? ` · ${lead.sourceDetail}` : ""}
-      </span>
+        <span className="crm-source" title="Источник лида">
+          <span className="crm-dot" />
+          {sourceName}
+          {lead.sourceDetail ? ` · ${lead.sourceDetail}` : ""}
+        </span>
+      </Link>
 
       <div className="crm-card-foot">
         <time>{created}</time>
