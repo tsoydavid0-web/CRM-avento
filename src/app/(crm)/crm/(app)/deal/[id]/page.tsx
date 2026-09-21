@@ -6,6 +6,7 @@ import { requireUser } from "@/lib/crm/auth";
 import { StatusSelect } from "../../StatusSelect";
 import { AddTask } from "../../tasks/AddTask";
 import { TaskToggle } from "../../tasks/TaskToggle";
+import { DeleteLead } from "./DeleteLead";
 import { EditLead } from "./EditLead";
 import { NoteForm } from "./NoteForm";
 
@@ -82,7 +83,10 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
           <Link href="/crm" className="crm-back">← К воронке</Link>
           <h1>{name}</h1>
         </div>
-        <StatusSelect leadId={id} status={(lead.status as string) ?? "new"} />
+        <div className="crm-deal-actions">
+          <StatusSelect leadId={id} status={(lead.status as string) ?? "new"} />
+          <DeleteLead leadId={id} />
+        </div>
       </header>
 
       <div className="crm-deal-grid">
